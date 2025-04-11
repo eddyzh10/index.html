@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burning Desire - 3D Anprobe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #000;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            gap: 20px;
+        }
+        
+        .controls {
+            flex: 1;
+            min-width: 300px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .viewer {
+            flex: 2;
+            min-width: 500px;
+            height: 600px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #333;
+        }
+        
+        .skin-tones {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .skin-tone {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+        
+        .skin-tone:hover {
+            transform: scale(1.1);
+        }
+        
+        .skin-tone.selected {
+            border-color: #000;
+        }
+        
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .product-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .product-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .product-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .viewer-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .viewer-controls button {
+            width: auto;
+            padding: 8px 15px;
+        }
+        
+        #model-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .viewer {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Burning Desire - 3D Anprobe</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="main-content">
+            <div class="controls">
+                <h2>Modell anpassen</h2>
+                
+                <div class="control-group">
+                    <label for="gender">Geschlecht:</label>
+                    <select id="gender">
+                        <option value="male">Männlich</option>
+                        <option value="female">Weiblich</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Hautfarbe:</label>
+                    <div class="skin-tones">
+                        <div class="skin-tone" style="background-color: #f8d5c2;" data-tone="1"></div>
+                        <div class="skin-tone" style="background-color: #e3b598;" data-tone="2"></div>
+                        <div class="skin-tone selected" style="background-color: #c68c53;" data-tone="3"></div>
+                        <div class="skin-tone" style="background-color: #a67358;" data-tone="4"></div>
+                        <div class="skin-tone" style="background-color: #6a4c39;" data-tone="5"></div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="body-type">Körpertyp:</label>
+                    <select id="body-type">
+                        <option value="average">Durchschnittlich</option>
+                        <option value="athletic">Athletisch</option>
+                        <option value="plus">Plus Size</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="height">Größe:</label>
+                    <select id="height">
+                        <option value="short">Klein (150-170 cm)</option>
+                        <option value="average" selected>Mittel (170-180 cm)</option>
+                        <option value="tall">Groß (180-200 cm)</option>
+                    </select>
+                </div>
+                
+                <button id="update-model">Modell aktualisieren</button>
+                
+                <h2>Produkte anprobieren</h2>
+                <div class="products">
+                    <div class="product-item" data-product-id="1">
+                        <img src="https://via.placeholder.com/120x150/3264c8/ffffff?text=T-Shirt" alt="Blaues T-Shirt">
+                    </div>
+                    <div class="product-item" data-product-id="2">
+                        <img src="https://via.placeholder.com/120x150/333333/ffffff?text=Jacke" alt="Schwarze Jacke">
+                    </div>
+                    <div class="product-item" data-product-id="3">
+                        <img src="https://via.placeholder.com/120x150/c83264/ffffff?text=Damen+Shirt" alt="Rosa Damen T-Shirt">
+                    </div>
+                    <div class="product-item" data-product-id="4">
+                        <img src="https://via.placeholder.com/120x150/999999/ffffff?text=Damen+Jacke" alt="Graue Damen Jacke">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="viewer">
+                <div id="model-container"></div>
+                <div class="viewer-controls">
+                    <button id="rotate-left">Drehen links</button>
+                    <button id="rotate-right">Drehen rechts</button>
+                    <button id="zoom-in">Zoom +</button>
+                    <button id="zoom-out">Zoom -</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Three.js scene
+            let scene, camera, renderer, controls, model;
+            let container = document.getElementById('model-container');
+            
+            // Current model settings
+            let currentGender = 'male';
+            let currentSkinTone = '3';
+            let currentBodyType = 'average';
+            let currentHeight = 'average';
+            let currentProduct = null;
+            
+            // Initialize the scene
+            initScene();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            function initScene() {
+                console.log("Initializing 3D scene...");
+                // Create scene
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xf5f5f5);
+                
+                // Create camera
+                camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+                camera.position.z = 5;
+                
+                // Create renderer
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(container.clientWidth, container.clientHeight);
+                container.appendChild(renderer.domElement);
+                
+                // Add lights
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(0, 1, 1);
+                scene.add(directionalLight);
+                
+                // Add controls
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.25;
+                controls.enableZoom = true;
+                
+                // Load initial model
+                loadModel();
+                
+                // Animation loop
+                animate();
+                
+                console.log("3D scene initialized successfully");
+            }
+            
+            function loadModel() {
+                console.log("Loading 3D model...");
+                console.log("Settings:", {
+                    gender: currentGender,
+                    skinTone: currentSkinTone,
+                    bodyType: currentBodyType,
+                    height: currentHeight,
+                    product: currentProduct
+                });
+                
+                // Remove existing model if any
+                if (model) {
+                    scene.remove(model);
+                }
+                
+                // Create a more detailed placeholder model
+                model = new THREE.Group();
+                
+                // Get skin color based on tone
+                const skinColor = getSkinToneColor(currentSkinTone);
+                console.log("Using skin color:", skinColor);
+                
+                // Create head
+                const headGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+                const headMaterial = new THREE.MeshPhongMaterial({ color: skinColor });
+                const head = new THREE.Mesh(headGeometry, headMaterial);
+                head.position.y = 3;
+                model.add(head);
+                
+                // Create neck
+                const neckGeometry = new THREE.CylinderGeometry(0.2, 0.25, 0.3, 32);
+                const neckMaterial = new THREE.MeshPhongMaterial({ color: skinColor });
+                const neck = new THREE.Mesh(neckGeometry, neckMaterial);
+                neck.position.y = 2.6;
+                model.add(neck);
+                
+                // Create torso - adjust based on gender and body type
+                let torsoTopRadius = 0.7;
+                let torsoBottomRadius = 0.5;
+                let torsoHeight = 1.5;
+                
+                if (currentGender === 'female') {
+                    torsoTopRadius = 0.65;
+                    torsoBottomRadius = 0.55;
+                }
+                
+                if (currentBodyType === 'athletic') {
+                    torsoTopRadius += 0.1;
+                    torsoBottomRadius -= 0.05;
+                } else if (currentBodyType === 'plus') {
+                    torsoTopRadius += 0.2;
+                    torsoBottomRadius += 0.15;
+                }
+                
+                const torsoGeometry = new THREE.CylinderGeometry(
+                    torsoTopRadius,
+                    torsoBottomRadius,
+                    torsoHeight,
+                    32
+                );
+                
+                // Torso color based on current product
+                let torsoColor = 0x555555; // Default clothing color
+                if (currentProduct) {
+                    // In a real implementation, this would use the product's texture
+                    torsoColor = getProductColor(currentProduct);
+                }
+                
+                const torsoMaterial = new THREE.MeshPhongMaterial({ color: torsoColor });
+                const torso = new THREE.Mesh(torsoGeometry, torsoMaterial);
+                torso.position.y = 1.75;
+                model.add(torso);
+                
+                // Add female characteristics if needed
+                if (currentGender === 'female') {
+                    const chestSize = currentBodyType === 'athletic' ? 0.25 : 
+                                     currentBodyType === 'plus' ? 0.35 : 0.3;
+                    
+                    const chestGeometry = new THREE.SphereGeometry(chestSize, 32, 16);
+                    const chestMaterial = new THREE.MeshPhongMaterial({ color: torsoColor });
+                    
+                    const leftChest = new THREE.Mesh(chestGeometry, chestMaterial);
+                    leftChest.position.set(-0.3, 2, 0.3);
+                    model.add(leftChest);
+                    
+                    const rightChest = new THREE.Mesh(chestGeometry, chestMaterial);
+                    rightChest.position.set(0.3, 2, 0.3);
+                    model.add(rightChest);
+                }
+                
+                // Create hips/lower body - adjust based on gender and body type
+                let hipWidth = currentGender === 'female' ? 0.6 : 0.5;
+                
+                if (currentBodyType === 'athletic') {
+                    hipWidth -= 0.05;
+                } else if (currentBodyType === 'plus') {
+                    hipWidth += 0.15;
+                }
+                
+                const lowerGeometry = new THREE.CylinderGeometry(torsoBottomRadius, hipWidth, 0.8, 32);
+                const lowerMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 }); // Pants color
+                const lower = new THREE.Mesh(lowerGeometry, lowerMaterial);
+                lower.position.y = 0.6;
+                model.add(lower);
+                
+                // Create legs
+                const legThickness = currentBodyType === 'athletic' ? 0.22 : 
+                                    currentBodyType === 'plus' ? 0.3 : 0.25;
+                
+                const legGeometry = new THREE.CylinderGeometry(legThickness, legThickness, 2, 32);
+                const legMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 }); // Pants color
+                
+                const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+                leftLeg.position.set(-0.3, -1, 0);
+                model.add(leftLeg);
+                
+                const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+                rightLeg.position.set(0.3, -1, 0);
+                model.add(rightLeg);
+                
+                // Create arms
+                const armThickness = currentBodyType === 'athletic' ? 0.18 : 
+                                    currentBodyType === 'plus' ? 0.25 : 0.15;
+                
+                const armGeometry = new THREE.CylinderGeometry(armThickness, armThickness, 1.5, 32);
+                const armMaterial = new THREE.MeshPhongMaterial({ color: torsoColor }); // Match torso for long sleeves
+                
+                // For short sleeves, make forearms skin color
+                const forearmGeometry = new THREE.CylinderGeometry(armThickness * 0.9, armThickness * 0.9, 1.2, 32);
+                const forearmMaterial = new THREE.MeshPhongMaterial({ color: skinColor });
+                
+                // Left arm
+                const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+                leftArm.position.set(-0.9, 1.75, 0);
+                leftArm.rotation.z = Math.PI / 6; // Angle the arm outward
+                model.add(leftArm);
+                
+                // Left forearm (for short sleeves)
+                const leftForearm = new THREE.Mesh(forearmGeometry, forearmMaterial);
+                leftForearm.position.set(-1.4, 1.2, 0);
+                leftForearm.rotation.z = Math.PI / 3; // Angle the forearm
+                // Only add for short sleeves
+                if (currentProduct && currentProduct < 3) { // T-shirts are products 1 and 3
+                    model.add(leftForearm);
+                }
+                
+                // Right arm
+                const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+                rightArm.position.set(0.9, 1.75, 0);
+                rightArm.rotation.z = -Math.PI / 6; // Angle the arm outward
+                model.add(rightArm);
+                
+                // Right forearm (for short sleeves)
+                const rightForearm = new THREE.Mesh(forearmGeometry, forearmMaterial);
+                rightForearm.position.set(1.4, 1.2, 0);
+                rightForearm.rotation.z = -Math.PI / 3; // Angle the forearm
+                // Only add for short sleeves
+                if (currentProduct && currentProduct < 3) { // T-shirts are products 1 and 3
+                    model.add(rightForearm);
+                }
+                
+                // Add the model to the scene
+                scene.add(model);
+                
+                // Adjust model height
+                let scale = 1;
+                if (currentHeight === 'short') {
+                    scale = 0.9;
+                } else if (currentHeight === 'tall') {
+                    scale = 1.1;
+                }
+                
+                model.scale.set(scale, scale, scale);
+                
+                // Center the model
+                model.position.y = -1;
+                
+                console.log("3D model loaded successfully");
+            }
+            
+            function setupEventListeners() {
+                console.log("Setting up event listeners...");
+                
+                // Gender selection
+                document.getElementById('gender').addEventListener('change', function() {
+                    currentGender = this.value;
+                    console.log("Gender changed to:", currentGender);
+                });
+                
+                // Skin tone selection
+                document.querySelectorAll('.skin-tone').forEach(tone => {
+                    tone.addEventListener('click', function() {
+                        currentSkinTone = this.dataset.tone;
+                        console.log("Skin tone changed to:", currentSkinTone);
+                        
+                        // Update UI
+                        document.querySelectorAll('.skin-tone').forEach(t => {
+                            t.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                    });
+                });
+                
+                // Body type selection
+                document.getElementById('body-type').addEventListener('change', function() {
+                    currentBodyType = this.value;
+                    console.log("Body type changed to:", currentBodyType);
+                });
+                
+                // Height selection
+                document.getElementById('height').addEventListener('change', function() {
+                    currentHeight = this.value;
+                    console.log("Height changed to:", currentHeight);
+                });
+                
+                // Update model button
+                document.getElementById('update-model').addEventListener('click', function() {
+                    console.log("Update model button clicked");
+                    loadModel();
+                });
+                
+                // Product selection
+                document.querySelectorAll('.product-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        currentProduct = parseInt(this.dataset.productId);
+                        console.log("Product selected:", currentProduct);
+                        
+                        // Update UI
+                        document.querySelectorAll('.product-item').forEach(p => {
+                            p.style.border = '1px solid #ddd';
+                        });
+                        this.style.border = '2px solid #000';
+                        
+                        // Update model with selected product
+                        loadModel();
+                    });
+                });
+                
+                // Viewer controls
+                document.getElementById('rotate-left').addEventListener('click', function() {
+                    console.log("Rotate left clicked");
+                    if (model) {
+                        model.rotation.y -= 0.3;
+                    }
+                });
+                
+                document.getElementById('rotate-right').addEventListener('click', function() {
+                    console.log("Rotate right clicked");
+                    if (model) {
+                        model.rotation.y += 0.3;
+                    }
+                });
+                
+                document.getElementById('zoom-in').addEventListener('click', function() {
+                    console.log("Zoom in clicked");
+                    camera.position.z -= 0.5;
+                });
+                
+                document.getElementById('zoom-out').addEventListener('click', function() {
+                    console.log("Zoom out clicked");
+                    camera.position.z += 0.5;
+                });
+                
+                // Handle window resize
+                window.addEventListener('resize', onWindowResize);
+                
+                console.log("Event listeners set up successfully");
+            }
+            
+            function getSkinToneColor(tone) {
+                switch (tone) {
+                    case '1': return 0xf8d5c2;
+                    case '2': return 0xe3b598;
+                    case '3': return 0xc68c53;
+                    case '4': return 0xa67358;
+                    case '5': return 0x6a4c39;
+                    default: return 0xc68c53; // Default to medium
+                }
+            }
+            
+            function getProductColor(productId) {
+                switch (productId) {
+                    case 1: return 0x3264c8; // Blue T-shirt
+                    case 2: return 0x333333; // Black jacket
+                    case 3: return 0xc83264; // Pink women's T-shirt
+                    case 4: return 0x999999; // Grey women's jacket
+                    default: return 0x555555;
+                }
+            }
+            
+            function onWindowResize() {
+                console.log("Window resized");
+                if (container && camera && renderer) {
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                }
+            }
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                if (controls) {
+                    controls.update();
+                }
+                
+                if (scene && camera && renderer) {
+                    renderer.render(scene, camera);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
